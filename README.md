@@ -21,9 +21,9 @@ The goal is a course that teaches a child to program. The game is the part that 
 these are the things standing between it and a course.
 
 **A level editor.** Six levels is one sitting. Teaching needs a lot more of them, and hand-editing
-map files is not a way to write a curriculum. Most of the pieces are here already - the renderer
-can draw a level with no game running, which is what an editor needs - but nothing can write a map
-back out yet.
+map files is not a way to write a curriculum. A first version is in, described below: it lays
+cubes, water, carrots and the rabbit, plays the result and writes a Tiled map back out. It cannot
+place props yet, choose which blocks a level offers, resize the grid, or read a map back in.
 
 **Three stars a level.** One for finishing it, one for the shortest route, one for the shortest
 program. A level can be replayed to improve on them. The third already half exists - the level map
@@ -95,6 +95,21 @@ For a sub-path deployment:
 ```sh
 npm run build -- --base=/rabbit-code/
 ```
+
+## Level editor
+
+`/editor.html` on the dev server. It keeps a list of levels in `localStorage` and opens one on a
+canvas with five tools: cube, water, carrot, the rabbit's start, and erase. Click or drag to paint.
+Clicking the rabbit where it already stands turns it a quarter.
+
+Each row in the list can play its level or export it. Play opens the game at
+`/?custom=<id>`, which reads the level out of `localStorage` instead of the ladder; the level is
+not part of the ladder, so finishing it unlocks nothing and leads nowhere. Export writes the same
+Tiled map format the shipped levels use, so the file drops straight into `public/logos/2017/logo17/`.
+
+The editor itself is not in `npm run build` - with no Vite config, `index.html` is the only entry
+point built. `?custom=` is part of the game, so a deployed build still plays a level that is
+already in that browser's storage; there is just no page there to author one.
 
 ## Localization
 
