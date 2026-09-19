@@ -7,9 +7,10 @@
  */
 
 import '../styles/editor.css';
-import { loadTiles, type Level, type TilesFile } from '../core/assets';
+import { loadAtlas, loadTiles, preload, type Level, type TilesFile } from '../core/assets';
 import { clone, el } from '../game/ui';
 import { deleteLevel, newLevel, nextLevelId, readLevels, saveLevel } from './storage';
+import { applyTool, TOOLS, type ToolName } from './tools';
 import { EditorView } from './view';
 
 function showList(root: HTMLElement, tiles: TilesFile): void {
@@ -68,26 +69,79 @@ function showEditor(root: HTMLElement, tiles: TilesFile, level: Level): void {
     showList(root, tiles);
   });
 
+  let tool: ToolName = 'cube';
+  const tools = el<HTMLElement>(view, '.rc-ed-tools');
+  const buttons = new Map<ToolName, HTMLButtonElement>();
+  for (const entry of TOOLS) {
+    const button = el<HTMLButtonElement>(clone('tpl-ed-tool'), '.rc-ed-tool');
+    button.textContent = entry.label;
+    button.title = entry.hint;
+    button.addEventListener('click', () => {
+      tool = entry.name;
+      for (const [name, each] of buttons) {
+        each.setAttribute('aria-checked', String(name === tool));
+      }
+      status.textContent = entry.hint;
+    });
+    buttons.set(entry.name, button);
+    tools.append(button);
+  }
+  buttons.get(tool)?.setAttribute('aria-checked', 'true');
+
   root.append(view);
 
   // The canvas has no layout box until it is in the document, and its size is what the view fits.
   const editorView = new EditorView(canvas, tiles);
+  const counts = (): string => `${level.tiles.length} cubes, ${level.carrots.length} carrots`;
   editorView.draw(level);
-  status.textContent = `${level.title}: ${level.tiles.length} cubes, ${level.carrots.length} carrots`;
+  status.textContent = `${level.title}: ${counts()}`;
 
-  const redraw = (): void => {
+  window.addEventListener('resize', () => {
     editorView.draw(level);
-  };
-  window.addEventListener('resize', redraw);
-
-  canvas.addEventListener('pointermove', (event) => {
-    const cell = editorView.cellAt(event, level);
-    status.textContent = cell === null ? 'Outside the map' : `Cell ${cell.x}, ${cell.z}`;
   });
+
+  /** A drag lays a run of cubes; each cell is applied once. */
+  let painting = false;
+  let lastCell = '';
+
+  const paint = (event: PointerEvent): void => {
+    const cell = editorView.cellAt(event, level);
+    if (cell === null) return;
+    const key = `${cell.x},${cell.z}`;
+    if (key === lastCell) return;
+    lastCell = key;
+    const said = applyTool(tool, level, cell);
+    saveLevel(level);
+    editorView.draw(level);
+    status.textContent = `${said}. ${counts()}`;
+  };
+
+  canvas.addEventListener('pointerdown', (event) => {
+    painting = true;
+    lastCell = '';
+    canvas.setPointerCapture(event.pointerId);
+    paint(event);
+  });
+  canvas.addEventListener('pointermove', (event) => {
+    if (painting) paint(event);
+  });
+  for (const type of ['pointerup', 'pointercancel'] as const) {
+    canvas.addEventListener(type, () => {
+      painting = false;
+    });
+  }
 }
 
 const root = document.getElementById('app');
 if (root === null) throw new Error('editor.html is missing #app');
 
-const tiles = await loadTiles();
+/**
+ * `shared-sprite.svg`. Every gid the editor can place resolves to it.
+ *
+ * Both of these are needed before anything draws: the atlas turns a sprite key into a rect, and a
+ * sprite skips its draw until its sheet is decoded.
+ */
+const SHARED_SHEET_INDEX = 1;
+
+const [tiles] = await Promise.all([loadTiles(), loadAtlas(), preload([SHARED_SHEET_INDEX])]);
 showList(root, tiles);
