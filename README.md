@@ -18,12 +18,17 @@ than a copy of the bundle - no runtime dependencies, no game engine.
 ## Roadmap
 
 The goal is a course that teaches a child to program. The game is the part that already works;
-these are the two things standing between it and a course.
+these are the things standing between it and a course.
 
 **A level editor.** Six levels is one sitting. Teaching needs a lot more of them, and hand-editing
 map files is not a way to write a curriculum. Most of the pieces are here already - the renderer
 can draw a level with no game running, which is what an editor needs - but nothing can write a map
 back out yet.
+
+**Three stars a level.** One for finishing it, one for the shortest route, one for the shortest
+program. A level can be replayed to improve on them. The third already half exists - the level map
+draws a ribbon when a level is solved in no more blocks than its target - so this is mostly a
+matter of counting hops as well as blocks, and showing all three.
 
 **More blocks.** Move, turn, repeat and the start hat cover sequencing, loops, and working out why
 your own program did the wrong thing. That is a genuine first lesson and it is where the block set
