@@ -44,6 +44,19 @@ declare namespace Blockly {
     preload(): void;
   }
 
+  /** A field on a block. Only the parts `workspace.ts` patches are declared. */
+  interface Field {
+    /** Redraws the field's SVG text from its current value. */
+    render_(): void;
+  }
+
+  const FieldTextInput: {
+    prototype: Field & {
+      /** Returns the closure `WidgetDiv` runs when the editor closes. */
+      widgetDispose_(this: Field): () => void;
+    };
+  };
+
   function inject(container: Element | string, options: object): WorkspaceSvg;
   namespace inject {
     /** Patched in workspace.ts to load only the `.wav` files that ship with the assets. */

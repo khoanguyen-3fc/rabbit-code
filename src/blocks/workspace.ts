@@ -346,6 +346,30 @@ export function installSounds(): void {
   };
 }
 
+// The loop count keeps its old text after the editor closes. Typing sets `text_` and re-renders,
+// but the editor is over the field so nothing is seen; closing calls `setText` with the same
+// string, which returns early and never redraws. The value is right - only the drawing is stale -
+// so the program runs the number you typed while the block shows the number you replaced.
+let fieldRedrawPatched = false;
+
+/** Idempotent, and must run before the first `Blockly.inject`. */
+export function installFieldRedraw(): void {
+  if (fieldRedrawPatched) return;
+  fieldRedrawPatched = true;
+
+  const proto = Blockly.FieldTextInput.prototype;
+  const base = proto.widgetDispose_;
+
+  proto.widgetDispose_ = function (this: Blockly.Field): () => void {
+    const close = base.call(this);
+    return (): void => {
+      close();
+      // `forceRerender` does not redraw the text here; `render_` is what replaces the text node.
+      this.render_();
+    };
+  };
+}
+
 // ==========================================================================
 // The workspace
 // ==========================================================================
@@ -373,6 +397,7 @@ export function applyPalette(colours: Record<string, BlocklyColourValue>): void 
   installBlockShadow();
   installDisabledRendering();
   installSounds();
+  installFieldRedraw();
   // 5, not the scratch-blocks default of 11. This feeds the flyout height: 11 makes the flyout
   // 6 px too tall and pushes its blocks up by 6 px.
   Blockly.Scrollbar.scrollbarThickness = 5;
