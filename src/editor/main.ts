@@ -7,7 +7,14 @@
  */
 
 import '../styles/editor.css';
-import { loadAtlas, loadTiles, preload, type Level, type TilesFile } from '../core/assets';
+import {
+  loadAtlas,
+  loadTiles,
+  preload,
+  type GridPos,
+  type Level,
+  type TilesFile,
+} from '../core/assets';
 import { clone, el } from '../game/ui';
 import { deleteLevel, newLevel, nextLevelId, readLevels, saveLevel } from './storage';
 import { applyTool, TOOLS, type ToolName } from './tools';
@@ -93,38 +100,55 @@ function showEditor(root: HTMLElement, tiles: TilesFile, level: Level): void {
   // The canvas has no layout box until it is in the document, and its size is what the view fits.
   const editorView = new EditorView(canvas, tiles);
   const counts = (): string => `${level.tiles.length} cubes, ${level.carrots.length} carrots`;
-  editorView.draw(level);
+  /** The cell the pointer is over, drawn picked out of the grid. */
+  let hover: GridPos | null = null;
+  editorView.draw(level, hover);
   status.textContent = `${level.title}: ${counts()}`;
 
   window.addEventListener('resize', () => {
-    editorView.draw(level);
+    editorView.draw(level, hover);
   });
 
   /** A drag lays a run of cubes; each cell is applied once. */
   let painting = false;
   let lastCell = '';
 
-  const paint = (event: PointerEvent): void => {
-    const cell = editorView.cellAt(event, level);
-    if (cell === null) return;
+  const paint = (cell: GridPos): void => {
     const key = `${cell.x},${cell.z}`;
     if (key === lastCell) return;
     lastCell = key;
     const said = applyTool(tool, level, cell);
     saveLevel(level);
-    editorView.draw(level);
     status.textContent = `${said}. ${counts()}`;
   };
 
   canvas.addEventListener('pointerdown', (event) => {
+    const cell = editorView.cellAt(event, level);
     painting = true;
     lastCell = '';
     canvas.setPointerCapture(event.pointerId);
-    paint(event);
+    if (cell === null) return;
+    hover = cell;
+    paint(cell);
+    editorView.draw(level, hover);
   });
+
   canvas.addEventListener('pointermove', (event) => {
-    if (painting) paint(event);
+    const cell = editorView.cellAt(event, level);
+    const moved = (cell?.x ?? -1) !== (hover?.x ?? -1) || (cell?.z ?? -1) !== (hover?.z ?? -1);
+    if (painting && cell !== null) paint(cell);
+    // Redrawing rebuilds the scene, so it happens when the cell changes rather than every move.
+    if (!moved && !painting) return;
+    hover = cell;
+    editorView.draw(level, hover);
   });
+
+  canvas.addEventListener('pointerleave', () => {
+    if (hover === null) return;
+    hover = null;
+    editorView.draw(level, hover);
+  });
+
   for (const type of ['pointerup', 'pointercancel'] as const) {
     canvas.addEventListener(type, () => {
       painting = false;

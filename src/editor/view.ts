@@ -19,6 +19,9 @@ const GROUND_TOP_Y = -1;
 /** Half a cell of air around the map, so the outermost cubes are not flush with the edge. */
 const FIT_MARGIN = 1;
 
+/** Backing-store px. The store is twice the CSS size, so this is a one pixel line on screen. */
+const GRID_LINE_PX = 2;
+
 export class EditorView {
   private readonly camera = new Camera();
   private readonly resolution: CanvasResolution;
@@ -36,15 +39,68 @@ export class EditorView {
   }
 
   /**
-   * Redraws the level. The old tree is detached first: `render` only ever adds the puzzle to the
-   * camera, so leaving it attached would draw every past version underneath this one.
+   * Redraws the level, then the grid with `hover` picked out. The old tree is detached first:
+   * `render` only ever adds the puzzle to the camera, so leaving it attached would draw every past
+   * version underneath this one.
    */
-  draw(level: Level): void {
+  draw(level: Level, hover: GridPos | null = null): void {
     this.resolution.update();
     if (this.puzzle) this.camera.removeChild(this.puzzle);
     this.puzzle = buildSceneForLevel(level, { tiles: this.tiles, bus: null });
     this.fit(level);
     render(this.ctx, this.puzzle, this.camera);
+    this.drawGrid(level, hover);
+  }
+
+  /** A grid point in backing-store pixels. */
+  private toPixel(point: GridPos): { x: number; y: number } {
+    const origin = project(this.camera.position);
+    const p = project(point);
+    return { x: origin.sx + this.camera.scale * p.sx, y: origin.sy + this.camera.scale * p.sy };
+  }
+
+  /**
+   * The cell edges on the ground plane, and the cell under the pointer filled in.
+   *
+   * It is drawn over the level rather than under it, so the grid stays readable across cubes that
+   * are already placed. Sprites leave `globalAlpha` at their own opacity, so it is reset first.
+   */
+  private drawGrid(level: Level, hover: GridPos | null): void {
+    const ctx = this.ctx;
+    ctx.globalAlpha = 1;
+    ctx.lineWidth = GRID_LINE_PX;
+    ctx.strokeStyle = 'rgb(19 92 104 / 22%)';
+
+    ctx.beginPath();
+    for (let x = 0; x <= level.width; x += 1) {
+      const from = this.toPixel(pos(x, GROUND_TOP_Y, 0));
+      const to = this.toPixel(pos(x, GROUND_TOP_Y, level.height));
+      ctx.moveTo(from.x, from.y);
+      ctx.lineTo(to.x, to.y);
+    }
+    for (let z = 0; z <= level.height; z += 1) {
+      const from = this.toPixel(pos(0, GROUND_TOP_Y, z));
+      const to = this.toPixel(pos(level.width, GROUND_TOP_Y, z));
+      ctx.moveTo(from.x, from.y);
+      ctx.lineTo(to.x, to.y);
+    }
+    ctx.stroke();
+
+    if (hover === null) return;
+    const corners = [
+      this.toPixel(pos(hover.x, GROUND_TOP_Y, hover.z)),
+      this.toPixel(pos(hover.x + 1, GROUND_TOP_Y, hover.z)),
+      this.toPixel(pos(hover.x + 1, GROUND_TOP_Y, hover.z + 1)),
+      this.toPixel(pos(hover.x, GROUND_TOP_Y, hover.z + 1)),
+    ];
+    ctx.beginPath();
+    ctx.moveTo(corners[0].x, corners[0].y);
+    for (const corner of corners.slice(1)) ctx.lineTo(corner.x, corner.y);
+    ctx.closePath();
+    ctx.fillStyle = 'rgb(255 255 255 / 45%)';
+    ctx.fill();
+    ctx.strokeStyle = '#135c68';
+    ctx.stroke();
   }
 
   /**
