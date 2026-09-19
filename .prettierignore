@@ -1,0 +1,6 @@
+dist
+node_modules
+public/logos
+public/vendor
+src/data
+LICENSE

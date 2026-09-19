@@ -1,0 +1,19 @@
+{
+  "name": "rabbit-code",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "setup": "node scripts/assets.mjs && node scripts/vendor.mjs",
+    "predev": "npm run setup",
+    "dev": "vite",
+    "prebuild": "npm run setup",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2",
+    "typescript": "^7.0.2",
+    "vite": "^8.2.2"
+  }
+}

@@ -1,0 +1,34 @@
+<!-- Rabbit Code icon.
+
+     Carrot: traced in Inkscape for this repo, then cleaned up here. The trace arrived with the
+     body split into 10 subpaths, 9 of which were sub-pixel specks scattered across the leaf area;
+     dropping them is most of why the body path is 841 characters instead of 2342. All coordinates
+     are rounded to two decimals.
+
+     Leaves are drawn BEFORE the body, and their base carries a flap running 24 units down the
+     carrot axis so the body paints over the junction. That is what closes the gap that showed
+     between leaf and body: there is no edge to align, the seam is buried.
+
+     Three stripes run perpendicular to the axis, alternating which side they enter from, each
+     bleeding through its own edge and stopping 55% across. Clipped to the body and round-capped,
+     so the end pointing into the body reads as a rounded tip while the outer cap falls outside
+     the clip and is never seen.
+
+     Placement: rotated to 20 degrees off vertical (the trace was drawn at 45). Centred
+     horizontally on the artwork's area centroid, because the orange mass sits off-centre inside
+     its bounding box and box-centring left the carrot visibly right of the midline. Vertically it
+     is fitted to the braces instead: top and bottom land on 12.25 and 51.69, the measured outer
+     edges of the brace strokes, to within 0.06.
+
+     Braces: exact mirrors of one path about x=32, stroke 3.4, nub at x=6.44. -->
+<svg role="img" aria-label="Rabbit Code" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#1F2A37"/>
+  <g stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M16.44 14C13.24 14 13.24 16.52 13.24 19.4L13.24 28.04C13.24 30.92 6.44 30.92 6.44 32C6.44 32 13.24 33.08 13.24 35.96L13.24 44.6C13.24 47.48 13.24 50 16.44 50"/><g transform="translate(64,0) scale(-1,1)"><path d="M16.44 14C13.24 14 13.24 16.52 13.24 19.4L13.24 28.04C13.24 30.92 6.44 30.92 6.44 32C6.44 32 13.24 33.08 13.24 35.96L13.24 44.6C13.24 47.48 13.24 50 16.44 50"/></g></g>
+  <defs><clipPath id="rcBody"><path d="M7.48,157.15C5.67,156.33 4.95,154.5 5.22,151.43 5.61,147.02 9.48,137.45 14.63,128.16 15.51,126.58 18.07,121.82 20.32,117.6 27.43,104.26 33,94.76 40.38,83.45 49.08,70.08 54.61,62.8 59.74,57.94 65.45,52.53 71.73,48.77 77.48,47.31c2.19,-0.55 3.22,-0.64 6.02,-0.48 4.5,0.25 5.08,0.36 7.83,1.5 6.31,2.63 14.36,9.83 21.18,18.97 5.49,7.34 7.06,11.33 6.74,17.02 -0.23,4.02 -0.83,6.28 -2.64,9.92 -3.84,7.75 -11.4,15.63 -20.78,21.66 -19.4,12.47 -43.84,25.56 -65.88,35.29 -8.71,3.84 -10.35,4.47 -14.87,5.64 -4.2,1.09 -5.79,1.16 -7.62,0.32z"/></clipPath></defs>
+  <g transform="translate(14.59,12.34) scale(0.22068) rotate(-25.052 74.368 84.461)">
+    <path fill="#4C9634" d="M118.95,79.28C118.15,75.84 116.23,72.27 112.52,67.3 105.46,57.85 97.52,50.84 90.81,48.13l-2.65,-1.07 0.02,-4.89c0.02,-5.11 0.4,-7.21 1.79,-9.93 0.88,-1.72 2.65,-3.59 4,-4.24 1.1,-0.52 1.19,-0.52 1.99,0.07 0.46,0.34 1.52,1.6 2.35,2.8 1.25,1.8 1.55,2.08 1.73,1.57 1.63,-4.64 5.02,-11.61 6.98,-14.35 3.01,-4.21 6.82,-6.89 9.78,-6.89 2.77,0.01 5.24,1.78 6.09,4.35 0.62,1.89 0.21,6.19 -0.93,9.7 -0.54,1.66 -0.94,3.07 -0.89,3.12 0.05,0.05 1.38,-0.54 2.95,-1.32 4.52,-2.24 6.61,-2.86 9.75,-2.89 2.51,-0.02 2.87,0.06 4.29,0.94 2.31,1.44 3.53,3.77 3.53,6.74 0,1.96 -0.16,2.57 -1.2,4.69 -1.35,2.73 -4.28,6.08 -7.96,9.09l-2.3,1.88 0.93,0.22c6.94,1.63 8.88,2.41 10.75,4.33 1.69,1.74 2.16,3.68 1.39,5.74 -0.57,1.52 -2.47,3.71 -4.49,5.16l-0.96,0.69 1,0.8c1.34,1.07 1.85,2.42 1.61,4.19 -0.27,1.96 -0.95,3.16 -3.05,5.38 -4.14,4.37 -11.14,7.55 -16.69,7.56l-1.13,0z"/>
+    <path fill="#4C9634" d="M118.95,79.28L88.16,47.06L71.17,64.02L101.96,96.24Z"/>
+    <path fill="#F07C1E" d="M7.48,157.15C5.67,156.33 4.95,154.5 5.22,151.43 5.61,147.02 9.48,137.45 14.63,128.16 15.51,126.58 18.07,121.82 20.32,117.6 27.43,104.26 33,94.76 40.38,83.45 49.08,70.08 54.61,62.8 59.74,57.94 65.45,52.53 71.73,48.77 77.48,47.31c2.19,-0.55 3.22,-0.64 6.02,-0.48 4.5,0.25 5.08,0.36 7.83,1.5 6.31,2.63 14.36,9.83 21.18,18.97 5.49,7.34 7.06,11.33 6.74,17.02 -0.23,4.02 -0.83,6.28 -2.64,9.92 -3.84,7.75 -11.4,15.63 -20.78,21.66 -19.4,12.47 -43.84,25.56 -65.88,35.29 -8.71,3.84 -10.35,4.47 -14.87,5.64 -4.2,1.09 -5.79,1.16 -7.62,0.32z"/>
+    <g clip-path="url(#rcBody)" stroke="#D9670F" stroke-width="10" stroke-linecap="round" fill="none"><path d="M47.89,60.29L79.07,91.53"/><path d="M81.5,133.3L54.58,106.32"/><path d="M17.01,108.04L38.01,129.07"/></g>
+  </g>
+</svg>

@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rabbit Code</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <style>
+      html,
+      body,
+      #app {
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+
+    <!-- The chrome every scene shares. Declared here rather than built in code: it is fixed
+         structure, and the browser only builds it when ui.ts clones this template.
+         Icons are `<use>` into `icon_sprite.svg`, which ui.ts injects before the first clone. -->
+    <template id="tpl-chrome">
+      <canvas class="rc-canvas"></canvas>
+      <button type="button" class="rc-title"></button>
+
+      <div class="rc-gameui rc-hidden">
+        <div class="rc-overflow">
+          <svg><use href="#hpsvg-overflow_button" /></svg>
+        </div>
+        <div class="rc-overflow-clip rc-contracted">
+          <div class="rc-overflow-menu">
+            <button type="button" class="rc-overflow-item rc-overflow-toggle">
+              <svg><use href="#hpsvg-overflow_button_action" /></svg>
+            </button>
+            <button type="button" class="rc-overflow-item rc-overflow-map">
+              <svg><use href="#hpsvg-map_icon" /></svg>
+            </button>
+            <button type="button" class="rc-overflow-item rc-overflow-search">
+              <svg><use href="#hpsvg-search_icon" /></svg>
+            </button>
+            <button type="button" class="rc-overflow-item rc-overflow-share">
+              <svg><use href="#hpsvg-share_icon" /></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="rc-footer"></div>
+
+        <div class="rc-tray">
+          <!-- The arrows are the Blockly host's first children: with no `top` rule, that static
+               position is what places them. Blockly injects after. -->
+          <div class="rc-blockly">
+            <button
+              type="button"
+              class="rc-scroll-arrow rc-scroll-arrow-left rc-hidden"
+              aria-label="Scroll blocks left"
+            >
+              <svg><use href="#hpsvg-left_arrow" /></svg>
+            </button>
+            <button
+              type="button"
+              class="rc-scroll-arrow rc-scroll-arrow-right rc-hidden"
+              aria-label="Scroll blocks right"
+            >
+              <svg><use href="#hpsvg-right_arrow" /></svg>
+            </button>
+          </div>
+          <div class="rc-play-wrapper">
+            <div class="rc-play-base"></div>
+            <button type="button" class="rc-play-button">
+              <div class="rc-play-icon">
+                <svg><use href="#hpsvg-play_icon" /></svg>
+              </div>
+              <div class="rc-stop-icon">
+                <svg><use href="#hpsvg-stop_button" /></svg>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="rc-overlays"></div>
+
+      <!-- The container's `display:table` plus the h1's `display:table-cell` place and vertically
+           center the title; the ul is the row inside the nav column. The heading carries the
+           English text so it is never empty; EndScene replaces it with the active locale's. -->
+      <div class="rc-end rc-hidden">
+        <div class="rc-end-bg"></div>
+        <div class="rc-end-body">
+          <div class="rc-end-headercontainer">
+            <h1 class="rc-end-title">Celebrating 50 years of Kids Coding</h1>
+          </div>
+          <nav class="rc-end-nav">
+            <ul>
+              <li>
+                <button type="button" class="rc-end-map">
+                  <svg><use href="#hpsvg-map_icon" /></svg>
+                </button>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </template>
+    <!-- One tutorial card: the map canvas and its text on top, the block tray and the carrot
+         button below. Cloned into an Overlay's content by TutorialScene. -->
+    <template id="tpl-tutorial">
+      <button type="button" class="rc-x-button">
+        <svg><use href="#hpsvg-close_x" /></svg>
+      </button>
+      <div class="rc-tut-top">
+        <canvas class="rc-tut-canvas"></canvas>
+        <div class="rc-tut-text"></div>
+      </div>
+      <div class="rc-tut-bottom">
+        <div class="rc-tut-blockly-wrapper rc-hidden">
+          <div class="rc-tut-blockly"></div>
+          <div class="rc-play-wrapper">
+            <div class="rc-play-base"></div>
+            <button type="button" class="rc-play-button">
+              <div class="rc-play-icon">
+                <svg><use href="#hpsvg-play_icon" /></svg>
+              </div>
+              <div class="rc-stop-icon">
+                <svg><use href="#hpsvg-stop_button" /></svg>
+              </div>
+            </button>
+          </div>
+        </div>
+        <button type="button" class="rc-tut-carrot">
+          <svg><use href="#hpsvg-carrot_button" /></svg>
+        </button>
+      </div>
+    </template>
+    <!-- The progress map card, and one level icon cloned per level. -->
+    <template id="tpl-map">
+      <button type="button" class="rc-x-button" aria-label="Close">
+        <svg><use href="#hpsvg-close_x" /></svg>
+      </button>
+      <div class="rc-map-levels"></div>
+      <div class="rc-map-key"></div>
+    </template>
+    <template id="tpl-map-level">
+      <div class="rc-level">
+        <!-- The bar joins an icon to the one before it, so the first level drops it. -->
+        <div class="rc-level-bar"></div>
+        <svg class="rc-level-rabbit"><use href="#hpsvg-level_map_rabbit" /></svg>
+        <span class="rc-level-number"></span>
+        <div class="rc-level-lock">
+          <svg class="rc-lock-closed"><use href="#hpsvg-lock" /></svg>
+          <svg class="rc-ribbon-plain"><use href="#hpsvg-ribbon_locked" /></svg>
+          <svg class="rc-ribbon-earned"><use href="#hpsvg-ribbon_unlocked" /></svg>
+          <span class="rc-level-target"></span>
+        </div>
+      </div>
+    </template>
+    <!-- The share card: the picture, then facebook, twitter, e-mail and the link itself. The
+         buttons are fixed, so only their handlers are wired up. -->
+    <template id="tpl-share">
+      <div class="rc-share-inner">
+        <svg><use href="#hpsvg-share_image" /></svg>
+      </div>
+      <button type="button" class="rc-x-button" aria-label="Close">
+        <svg><use href="#hpsvg-close_x" /></svg>
+      </button>
+      <output class="rc-share-copied rc-hidden"></output>
+      <div class="rc-share-social">
+        <ul>
+          <li>
+            <button type="button" class="rc-share-fb">
+              <svg><use href="#hpsvg-facebook" /></svg>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="rc-share-tw">
+              <svg><use href="#hpsvg-twitter" /></svg>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="rc-share-em">
+              <svg><use href="#hpsvg-email" /></svg>
+            </button>
+          </li>
+          <li></li>
+          <button type="button" class="rc-share-link">
+            <svg><use href="#hpsvg-share_icon" /></svg><span></span>
+          </button>
+        </ul>
+      </div>
+    </template>
+    <!-- A classic script, so top-level `this` is window and the globals it defines are real
+         globals. It also runs before any deferred module script, so main.ts always finds
+         window.Blockly. Generated by scripts/vendor.mjs. -->
+    <script src="vendor/scratch-blocks-horizontal.js"></script>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

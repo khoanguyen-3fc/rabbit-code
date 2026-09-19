@@ -1,0 +1,969 @@
+/*
+ * Game chrome: colors, sizes and transitions. The two viewport scale steps of the tray are the
+ * only responsive rules.
+ */
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+.rc-root {
+  --rc-overlay-scale: 1;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #98eae0;
+  /* A wider fallback reflows headings when Nunito is unavailable. */
+  font-family: Nunito, sans-serif;
+  user-select: none;
+}
+
+/*
+ * Button reset, plus the font and color inheritance buttons otherwise miss. It deliberately sets
+ * neither `background` nor `padding`: an element-plus-class selector outranks the plain class
+ * selectors below, so a reset value here would win over them and blank or resize every styled
+ * button. Both are left to the individual rules.
+ */
+.rc-root button {
+  border: none;
+  outline: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* The reset above drops the UA focus ring; keyboard users need one back. */
+.rc-root button:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+
+/*
+ * The CTA artwork is the canvas element's own background,
+ * so the two sprites TitleScene draws composite over it. The scene clears the picture when it is
+ * dismissed, restoring the flat background color.
+ */
+.rc-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  /* The image is set from TitleScene via assetUrl(), so the deployment base applies to it too. */
+  background: no-repeat center;
+  background-size: contain;
+  background-color: #98eae0;
+}
+
+.rc-svg-sprite {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+/* Visibility pair: opacity fade for everything that is not a modal overlay. */
+.rc-visible:not(.rc-overlay) {
+  visibility: inherit;
+  opacity: 1;
+  transition: opacity 0.2s linear;
+}
+
+.rc-hidden:not(.rc-overlay) {
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    visibility 0s 0.2s,
+    opacity 0.2s linear;
+}
+
+/* ---------------------------------------------------------------- title */
+
+/*
+ * The click catcher over the canvas. The CTA button is not DOM - CTA_PLAY_BG and CTA_PLAY are
+ * drawn on the canvas - so the only thing left here is the cursor.
+ */
+.rc-title {
+  position: absolute;
+  inset: 0;
+  /* The button reset leaves `background` and `padding` to each rule; this one must show the
+     canvas through it. */
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+/* -------------------------------------------------------------- game ui */
+
+.rc-gameui {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.rc-gameui button,
+.rc-overflow-clip,
+.rc-tray {
+  pointer-events: auto;
+}
+
+/* ------------------------------------------------------- overflow menu */
+
+/* Expanded width: 4 * 50 px + 12 px of slack. */
+
+/* The kebab shown while the pill is closed. */
+.rc-overflow {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  top: 13px;
+  left: 7px;
+  padding: 12px;
+}
+
+.rc-overflow svg {
+  width: 30px;
+  height: 30px;
+}
+
+.rc-overflow-clip {
+  display: flex;
+  position: absolute;
+  top: 11px;
+  left: 9px;
+  border-radius: 55px;
+  width: 55px;
+  height: 55px;
+  overflow: hidden;
+  justify-content: flex-start;
+}
+
+.rc-overflow-clip.rc-contracted {
+  width: 55px;
+  height: 55px;
+  animation: rc-action-contract 0.2s ease-in-out;
+  animation-fill-mode: forwards;
+}
+
+.rc-overflow-clip.rc-expanded {
+  width: 212px;
+  animation: rc-action-expand 0.2s ease-in-out;
+  animation-fill-mode: forwards;
+}
+
+.rc-overflow-menu {
+  display: flex;
+  align-items: center;
+  position: relative;
+  min-width: 212px;
+}
+
+.rc-overflow-item {
+  background-color: transparent;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  padding: 5px;
+  align-items: center;
+  justify-content: center;
+  transform: scale(0.75);
+  transform-origin: center center;
+  transition: transform 0.2s ease-in-out;
+  border-radius: 50%;
+}
+
+.rc-overflow-item use {
+  fill: #58a69d;
+}
+
+.rc-overflow-item:active {
+  background-color: rgb(97 181 171 / 10%);
+}
+
+.rc-overflow-item:active use {
+  fill: #96eae0;
+}
+
+.rc-overflow-item svg {
+  margin: auto;
+  width: 30px;
+  height: 30px;
+}
+
+.rc-overflow-clip.rc-expanded .rc-overflow-item {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.rc-overflow-toggle {
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    transform 0.2s ease-in-out,
+    opacity 0.1s ease-out 0.15s;
+}
+
+.rc-overflow-toggle:active {
+  background-color: transparent;
+}
+
+.rc-overflow-clip.rc-expanded .rc-overflow-toggle {
+  opacity: 1;
+  transform: scale(1);
+  transition:
+    transform 0.2s ease-in-out,
+    opacity 0s;
+}
+
+@keyframes rc-action-expand {
+  0% {
+    width: 55px;
+    background-color: rgb(255 255 255 / 100%);
+    box-shadow: 0 2px 0 #58a69d;
+  }
+  100% {
+    width: 212px;
+    background-color: rgb(255 255 255 / 100%);
+    box-shadow: 0 2px 0 #58a69d;
+  }
+}
+
+@keyframes rc-action-contract {
+  0% {
+    width: 212px;
+    background-color: rgb(255 255 255 / 100%);
+    box-shadow: 0 2px 0 #58a69d;
+  }
+  98% {
+    width: 55px;
+    background-color: rgb(255 255 255 / 100%);
+    box-shadow: 0 2px 0 #58a69d;
+  }
+  100% {
+    width: 55px;
+    background-color: transparent;
+    box-shadow: 0 2px 0 transparent;
+  }
+}
+
+/* content-box, so the 2 px border adds to the 64. */
+.rc-footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 64px;
+  background: #47baa4;
+  border-top: #338c7b 2px solid;
+}
+
+/*
+ * The tray is 580x180. The horizontal renderer stacks the program in one row above the flyout
+ * strip, so that height is enough and a long program scrolls sideways.
+ */
+.rc-tray {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  display: flex;
+  width: 580px;
+  height: 180px;
+  transform: translate(-50%, 0);
+  transform-origin: bottom center;
+}
+
+.rc-blockly {
+  position: relative;
+  width: 490px;
+  height: 100%;
+  margin-right: 10px;
+}
+
+/* Neither scrollbar is shown. */
+.rc-root .blocklyScrollbarHorizontal,
+.rc-root .blocklyScrollbarVertical {
+  visibility: hidden;
+}
+
+/*
+ * The two tray scroll arrows that replace that hidden scrollbar. They are the first children of
+ * the Blockly host, so with no `top` their static position puts them at its top edge.
+ * `background-color` and `padding` are needed here because the `.rc-root button` reset sets
+ * neither.
+ */
+.rc-scroll-arrow {
+  position: absolute;
+  z-index: 3;
+  width: 42px;
+  height: 84px;
+  background-color: transparent;
+  padding: 0;
+}
+
+.rc-scroll-arrow svg {
+  width: 100%;
+  height: 100%;
+}
+
+.rc-scroll-arrow-left {
+  left: -1px;
+}
+
+.rc-scroll-arrow-right {
+  right: 0;
+}
+
+/*
+ * The block outline never paints and the workspace background rect has no edge. Both workspaces -
+ * the tray and the tutorial card - are inside `.rc-root`.
+ */
+.rc-root .blocklyPath {
+  stroke-width: 0;
+}
+
+.rc-root .blocklyMainBackground {
+  stroke: none;
+}
+
+@media (max-width: 600px), (max-height: 500px) {
+  .rc-tray {
+    transform: translate(-50%, 0) scale(0.8);
+  }
+  .rc-footer {
+    transform: scale(1, 0.8);
+    transform-origin: bottom center;
+  }
+}
+
+@media (max-width: 480px), (max-height: 400px) {
+  .rc-tray {
+    transform: translate(-50%, 0) scale(0.7);
+  }
+  .rc-footer {
+    transform: scale(1, 0.7);
+    transform-origin: bottom center;
+  }
+}
+
+/* --------------------------------------------------------- play button */
+
+/*
+ * Right of the workspace at the top of the tray. 490 + 10 of margin + 80 = the tray's 580.
+ */
+.rc-play-wrapper {
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+.rc-play-base,
+.rc-play-button {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+}
+
+.rc-play-base {
+  top: 4px;
+  background: #ab5e00;
+}
+
+.rc-play-button {
+  top: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f7941d;
+  transition: transform 0.05s ease-in-out;
+}
+
+.rc-play-button:active {
+  transform: translate(0, 4px);
+}
+
+.rc-play-icon,
+.rc-stop-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+}
+
+.rc-play-icon {
+  transform: translate(4px, 0);
+}
+
+.rc-play-icon svg,
+.rc-stop-icon svg {
+  fill: #fff;
+}
+
+.rc-play-icon svg {
+  width: 60%;
+  height: 60%;
+}
+
+.rc-stop-icon svg {
+  width: 50%;
+  height: 50%;
+}
+
+.rc-stop-icon,
+.rc-executing .rc-play-icon {
+  display: none;
+}
+
+.rc-executing .rc-stop-icon {
+  display: flex;
+}
+
+/* ------------------------------------------------------------ overlays */
+
+.rc-overlays {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.rc-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
+  z-index: 50;
+}
+
+/* easeOutBack in, easeInBack out. */
+.rc-overlay.rc-visible {
+  visibility: inherit;
+  transform: translate(0, 0);
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.rc-overlay.rc-hidden {
+  visibility: hidden;
+  transform: translate(0, -100%);
+  transition:
+    visibility 0s 0.4s,
+    transform 0.4s cubic-bezier(0.6, -0.28, 0.735, 0.045);
+}
+
+.rc-overlay-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  box-sizing: border-box;
+  width: 480px;
+  height: 480px;
+  padding: 24px;
+  border-radius: 25px;
+  background: #9d60a4;
+  color: #fff;
+  transform: translate(-50%, -50%) scale(var(--rc-overlay-scale));
+}
+
+.rc-x-button {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  background-color: transparent;
+}
+
+.rc-x-button svg {
+  width: 100%;
+  height: 100%;
+  fill: #fff;
+}
+
+.rc-inline-icon {
+  width: 30px;
+  height: 30px;
+  vertical-align: middle;
+}
+
+/* ----------------------------------------------------------- level map */
+
+/* `padding: 0` opts out of the shared card padding. */
+.rc-map-overlay .rc-overlay-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
+  direction: ltr;
+  padding: 0;
+}
+
+/* `contents` makes the icons lay out as direct children of the card. */
+.rc-map-levels {
+  display: contents;
+}
+
+.rc-level {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.rc-level-bar {
+  min-width: 40px;
+  height: 3px;
+  background-color: #135c68;
+}
+
+.rc-level.rc-unlocked .rc-level-bar {
+  background-color: #a4dd4a;
+}
+
+.rc-level-rabbit {
+  position: absolute;
+  visibility: hidden;
+  width: 76px;
+  height: 76px;
+  top: -96px;
+  right: -18px;
+}
+
+.rc-level.rc-current .rc-level-rabbit {
+  visibility: visible;
+}
+
+.rc-level-number {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  background-color: #135c68;
+  color: #fff;
+  font-size: 28px;
+  font-weight: bold;
+  border-radius: 2px;
+}
+
+.rc-level:not(.rc-current).rc-unlocked .rc-level-number {
+  background-color: #a4dd4a;
+  color: #135c68;
+}
+
+@keyframes rc-blink {
+  50% {
+    background-color: #a4dd4a;
+    color: #135c68;
+  }
+}
+
+@keyframes rc-blink-soft {
+  to {
+    outline: 2px solid rgb(255 255 255 / 0%);
+  }
+}
+
+.rc-level.rc-current .rc-level-number {
+  animation: rc-blink 850ms steps(1) infinite;
+}
+
+.rc-map-interactive .rc-level.rc-current .rc-level-number {
+  background-color: #a4dd4a;
+  color: #135c68;
+  animation: rc-blink-soft 850ms infinite;
+  outline: 2px solid rgb(255 255 255 / 60%);
+  outline-offset: 2px;
+}
+
+.rc-map-interactive .rc-level.rc-unlocked,
+.rc-map-interactive .rc-level.rc-current {
+  cursor: pointer;
+}
+
+/* hover */
+.rc-map-interactive .rc-level.rc-unlocked .rc-level-number:hover,
+.rc-map-interactive .rc-level.rc-current .rc-level-number:hover {
+  background-color: #bcf566;
+}
+
+/* pressed */
+.rc-map-interactive .rc-level.rc-unlocked .rc-level-number:active,
+.rc-map-interactive .rc-level.rc-current .rc-level-number:active {
+  background-color: #e8efdd;
+}
+
+.rc-level-lock {
+  position: absolute;
+  width: 55px;
+  height: 55px;
+  right: -26px;
+  bottom: -40px;
+  color: white;
+  font-family: Nunito, sans-serif;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+/* The three badge variants stack in place. */
+.rc-level-lock svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+}
+
+.rc-level.rc-locked .rc-lock-closed,
+.rc-level.rc-unlocked .rc-ribbon-plain {
+  display: block;
+}
+
+.rc-level.rc-unlocked.rc-ribbon .rc-ribbon-plain {
+  display: none;
+}
+
+.rc-level.rc-unlocked.rc-ribbon .rc-ribbon-earned {
+  display: block;
+}
+
+.rc-level.rc-locked .rc-level-lock {
+  width: 25px;
+  height: 25px;
+  right: -10px;
+  bottom: -10px;
+}
+
+.rc-level-target {
+  position: absolute;
+  top: 7px;
+  right: 21px;
+}
+
+.rc-level.rc-locked .rc-level-target {
+  visibility: hidden;
+}
+
+.rc-map-key {
+  position: absolute;
+  display: flex;
+  bottom: 20px;
+  left: 50%;
+  transform: translate(-50%, 0);
+  align-items: center;
+  color: #f9ed32;
+  font-size: 20px;
+}
+
+.rc-map-key svg {
+  width: 55px;
+  height: 55px;
+}
+
+/* ------------------------------------------------------------ tutorial */
+
+/*
+ * No padding: the two rows and the Blockly host are percentages of the bare 480x480 card, which
+ * is what makes the host 346x182. Padding here leaves too little room above the flyout strip and
+ * the block row hides behind it; the text carries its own margin instead.
+ */
+.rc-tut-overlay .rc-overlay-content {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  direction: ltr;
+}
+
+/* The 60/40 split. */
+.rc-tut-top {
+  display: flex;
+  justify-content: center;
+  height: 60%;
+  overflow: hidden;
+}
+
+.rc-tut-canvas {
+  width: 35%;
+  height: 100%;
+}
+
+/* The flex centring is what puts the text block mid-card. */
+.rc-tut-text {
+  display: flex;
+  align-items: center;
+  width: 65%;
+  margin: 0 10px;
+  font-size: 20px;
+  font-weight: 700;
+  text-align: left;
+}
+
+/*
+ * Only the heading size is set; the heading and the paragraph keep the browser's default margins,
+ * which is what sizes the text block inside the card.
+ */
+.rc-tut-text h1 {
+  font-size: 30px;
+}
+
+.rc-tut-bottom {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  height: 40%;
+}
+
+/* No vertical centring, so children start at the top. */
+.rc-tut-blockly-wrapper {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+}
+
+/* No overflow clip - the rounding the eye sees is the 84 px rx=42 background pill
+   Blockly draws, not this radius. */
+.rc-tut-blockly {
+  position: relative;
+  border-radius: 25px;
+  width: 72%;
+  height: 95%;
+  margin-right: 10px;
+}
+
+/*
+ * A static flex item of `.rc-tut-bottom`, so it sits at the top
+ * of the bottom half rather than being bottom-anchored. The background is `!important` because the
+ * `.rc-root button` reset would otherwise win on specificity and leave the disc transparent.
+ */
+.rc-tut-carrot {
+  display: block;
+  padding: 0;
+  width: 94px;
+  height: 100px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 4px 0 rgb(0 0 0 / 45%);
+  transition: transform 0.05s ease-in-out;
+}
+
+.rc-tut-carrot:active {
+  transform: translate(0, 4px);
+  box-shadow: 0 0 0 rgb(0 0 0 / 45%);
+}
+
+.rc-tut-carrot svg {
+  width: 45%;
+  height: 60%;
+  margin-left: 8px;
+}
+
+/* ---------------------------------------------------------- end screen */
+
+/*
+ * The flex row is what splits the screen: the cake is `width:100%` (basis 1280) and the body
+ * `width:40%` (basis 512), so default flex-shrink hands the cake 914.28 and the body 365.72 at
+ * this viewport.
+ */
+.rc-end {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  background: #66a109;
+}
+
+/* A plain flex item; the url comes from ui.ts. */
+.rc-end-bg {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+}
+
+/* The 40% right column; it is the nav's containing block. */
+.rc-end-body {
+  position: relative;
+  width: 40%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/*
+ * Its 64% height is what places the title in the upper part of the column, so the body needs no
+ * gap or justify-content.
+ */
+.rc-end-headercontainer {
+  display: table;
+  text-align: center;
+  width: 80%;
+  height: 64%;
+  margin: 10px;
+}
+
+/* The font-size is viewport-relative at every width. The table-cell discards the UA h1 margin. */
+.rc-end-title {
+  font-size: 3.9vw;
+  color: #fff;
+  text-shadow: 0 2.4px 0 #4d7e00;
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.rc-end-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  bottom: 13vh;
+  left: 50%;
+  transform: translate(-50%, 0);
+  position: absolute;
+}
+
+/* The button row inside the nav column. */
+.rc-end-nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  justify-content: space-between;
+}
+
+/* The button has no width or height: the 1.25vw padding around the 3vw icon is what sizes it. */
+.rc-end-nav ul button {
+  display: flex;
+  justify-content: center;
+  border-radius: 100%;
+  margin-left: 0.4vw;
+  margin-right: 0.4vw;
+  padding: 1.25vw;
+  box-shadow: 0 4px 0 #4d7e00;
+}
+
+/* No transition, the press snaps. */
+.rc-end-nav ul button:active {
+  transform: translate(0, 4px);
+  box-shadow: none;
+}
+
+.rc-end-nav ul button svg {
+  width: 3vw;
+  height: 3vw;
+  max-width: 65px;
+  max-height: 65px;
+}
+
+.rc-end-nav ul button svg use {
+  fill: #fff;
+}
+
+.rc-end-map {
+  background-color: #1db8f4;
+}
+
+/* ------------------------------------------------------------- share overlay */
+
+.rc-share-inner {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.rc-share-inner svg {
+  width: 100%;
+  height: 100%;
+}
+
+.rc-share-social {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+}
+
+.rc-share-social ul {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 70%;
+  margin: 12px auto;
+  padding: 0;
+  list-style: none;
+}
+
+.rc-share-social button,
+.rc-share-link {
+  display: flex;
+  align-items: center;
+  background-color: #fff;
+  box-shadow: 0 3px 0 rgb(90 56 94 / 45%);
+}
+
+.rc-share-social button:active,
+.rc-share-link:active {
+  transform: translate(0, 3px);
+  box-shadow: none;
+}
+
+.rc-share-social button {
+  width: 60px;
+  height: 60px;
+  margin: 0;
+  padding: 0;
+  border-radius: 100%;
+  justify-content: center;
+}
+
+.rc-share-social button svg {
+  width: 60%;
+  height: 60%;
+  margin: auto;
+}
+
+.rc-share-link {
+  width: 60%;
+  height: 36px;
+  margin: 12px auto;
+  padding: 0 14px;
+  border-radius: 18px;
+  justify-content: flex-start;
+}
+
+.rc-share-link svg {
+  width: 28px;
+  height: 28px;
+  fill: #663d6b;
+}
+
+.rc-share-link span {
+  width: 100%;
+  color: #663d6b;
+  font-size: 15px;
+  text-align: center;
+  user-select: text;
+}
+
+.rc-share-copied {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  padding: 10px 15px;
+  border-radius: 30px;
+  background-color: rgb(255 255 255 / 70%);
+  /* The card's white would sit at 1.47:1 on this pill. */
+  color: #663d6b;
+  transform: translate(-50%, 0);
+  transition:
+    transform 0.2s ease-out,
+    opacity 0.2s ease-out;
+}
