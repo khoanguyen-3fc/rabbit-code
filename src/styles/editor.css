@@ -120,7 +120,8 @@ body {
   gap: 6px;
 }
 
-.rc-ed-tool[aria-checked='true'] {
+/* Scoped to #app so it outranks the `#app button` reset above, which also sets a background. */
+#app .rc-ed-tool[aria-checked='true'] {
   background: #a4dd4a;
 }
 
