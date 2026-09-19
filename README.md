@@ -1,3 +1,5 @@
+<img src="public/favicon.svg" alt="" width="72" align="right" />
+
 # Rabbit Code
 
 A browser rewrite of the 2017 Google Doodle "Celebrating 50 years of Kids Coding". A rabbit walks
@@ -6,6 +8,12 @@ left, turn right, repeat. Six levels and three tutorials.
 
 The original is gone from google.com as a playable page. This runs it again, from a rewrite rather
 than a copy of the bundle: ~8,000 lines of TypeScript, no runtime dependencies, no game engine.
+
+![The last level, with the block tray below the board](screenshots/gameplay.jpg)
+
+|                                              |                                             |
+| -------------------------------------------- | ------------------------------------------- |
+| ![A tutorial card](screenshots/tutorial.jpg) | ![The level map](screenshots/level-map.jpg) |
 
 ## Roadmap
 
@@ -42,7 +50,8 @@ frame, and the renderer draws whatever the puzzle state says.
 Most doodle preservation projects rehost the original bundle. This one does not ship it:
 
 - The artwork, audio, level maps and translations are Google's. `npm run setup` downloads them from
-  google.com at build time, so the repository holds none of their content.
+  google.com at build time, so no asset file is committed here. The screenshots above are the one
+  exception.
 - The same script fetches the original `logo17.html` and `logo17.2.js`, so the untouched original
   is playable next to this one at `/logos/2017/logo17/logo17.html`.
 - `scratch-blocks` comes from the npm tarball, hash-pinned, and is unpacked without a tar binary.
