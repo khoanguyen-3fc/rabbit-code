@@ -9,11 +9,10 @@ left, turn right, repeat. Six levels and three tutorials.
 The original is gone from google.com as a playable page. This runs it again, from a rewrite rather
 than a copy of the bundle - no runtime dependencies, no game engine.
 
-![The last level, with the block tray below the board](screenshots/gameplay.jpg)
-
-|                                              |                                             |
-| -------------------------------------------- | ------------------------------------------- |
-| ![A tutorial card](screenshots/tutorial.jpg) | ![The level map](screenshots/level-map.jpg) |
+|                                                                                  |                                                                                                                |
+| -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| ![The last level, with the block tray below the board](screenshots/gameplay.jpg) | ![A level open in the editor, with the grid and the cell under the pointer picked out](screenshots/editor.jpg) |
+| ![A tutorial card](screenshots/tutorial.jpg)                                     | ![The level map](screenshots/level-map.jpg)                                                                    |
 
 ## Roadmap
 
