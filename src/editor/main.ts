@@ -17,8 +17,19 @@ import {
 } from '../core/assets';
 import { clone, el } from '../game/ui';
 import { deleteLevel, newLevel, nextLevelId, readLevels, saveLevel } from './storage';
+import { exportTiled } from '../engine';
 import { applyTool, TOOLS, type ToolName } from './tools';
 import { EditorView } from './view';
+
+/** Hands the browser a file. The object URL is released once the click has been taken. */
+function download(name: string, text: string): void {
+  const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = name;
+  link.click();
+  URL.revokeObjectURL(url);
+}
 
 function showList(root: HTMLElement, tiles: TilesFile): void {
   root.replaceChildren();
@@ -37,6 +48,16 @@ function showList(root: HTMLElement, tiles: TilesFile): void {
     const edit = el<HTMLButtonElement>(row, '.rc-ed-edit');
     edit.setAttribute('aria-label', `Edit ${level.title}`);
     edit.addEventListener('click', () => showEditor(root, tiles, level));
+
+    const save = el<HTMLButtonElement>(row, '.rc-ed-export');
+    save.setAttribute('aria-label', `Export ${level.title}`);
+    save.addEventListener('click', () => {
+      try {
+        download(`${level.id}.json`, JSON.stringify(exportTiled(level, tiles), null, 2));
+      } catch (error) {
+        alert(error instanceof Error ? error.message : 'That level cannot be exported');
+      }
+    });
 
     const remove = el<HTMLButtonElement>(row, '.rc-ed-delete');
     remove.setAttribute('aria-label', `Delete ${level.title}`);
