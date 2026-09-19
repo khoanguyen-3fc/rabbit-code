@@ -7,7 +7,7 @@ an isometric grid and eats carrots; you program it with Scratch-style blocks - h
 left, turn right, repeat. Six levels and three tutorials.
 
 The original is gone from google.com as a playable page. This runs it again, from a rewrite rather
-than a copy of the bundle: ~8,000 lines of TypeScript, no runtime dependencies, no game engine.
+than a copy of the bundle - no runtime dependencies, no game engine.
 
 ![The last level, with the block tray below the board](screenshots/gameplay.jpg)
 
