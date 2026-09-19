@@ -1,0 +1,138 @@
+/*
+ * Editor chrome. The game's palette, on a plain page: the editor is a tool, not part of the game,
+ * so it has no canvas background art and no overlays.
+ */
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+#app {
+  height: 100%;
+  background: #98eae0;
+  font-family: Nunito, sans-serif;
+  color: #135c68;
+}
+
+#app button {
+  border: none;
+  outline: none;
+  font: inherit;
+  cursor: pointer;
+  background: #fff;
+  color: #135c68;
+  padding: 8px 14px;
+  border-radius: 6px;
+  box-shadow: 0 2px 0 #58a69d;
+}
+
+#app button:active {
+  transform: translate(0, 2px);
+  box-shadow: none;
+}
+
+/* The reset above drops the UA focus ring; keyboard users need one back. */
+#app button:focus-visible,
+#app input:focus-visible {
+  outline: 3px solid #135c68;
+  outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------------ list */
+
+.rc-ed-list {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 32px 16px;
+}
+
+.rc-ed-list h1 {
+  font-size: 32px;
+  margin: 0 0 16px;
+}
+
+.rc-ed-rows {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px;
+}
+
+.rc-ed-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  background: rgb(255 255 255 / 50%);
+  border-radius: 8px;
+}
+
+.rc-ed-name {
+  flex: 1;
+  font-weight: 700;
+}
+
+.rc-ed-size {
+  opacity: 0.7;
+  font-size: 14px;
+}
+
+.rc-ed-note {
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+/* ------------------------------------------------------------------ edit */
+
+.rc-ed-edit-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.rc-ed-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: rgb(255 255 255 / 50%);
+}
+
+.rc-ed-title-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.rc-ed-title {
+  font: inherit;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 6px;
+  color: #135c68;
+}
+
+.rc-ed-tools {
+  display: flex;
+  gap: 6px;
+}
+
+.rc-ed-tool[aria-checked='true'] {
+  background: #a4dd4a;
+}
+
+.rc-ed-canvas {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+}
+
+.rc-ed-status {
+  margin: 0;
+  padding: 8px 16px;
+  font-size: 14px;
+  background: rgb(255 255 255 / 50%);
+}
