@@ -6,7 +6,7 @@
  * The click is also the first user gesture, so it is where the audio context is unlocked.
  */
 
-import { assetUrl } from '../../core/assets';
+import { assetUrl, type Level } from '../../core/assets';
 import { BACKGROUND_COLOUR } from '../../render/renderer';
 import { SceneNode, updateTransforms } from '../../render/scene-graph';
 import { SpriteNode } from '../../render/sprite';
@@ -31,7 +31,11 @@ export class TitleScene extends Scene {
   private baseScale = 1;
   private msElapsed = 0;
 
-  constructor(private readonly context: GameContext) {
+  constructor(
+    private readonly context: GameContext,
+    /** A level the editor made, played instead of the first ladder level. */
+    private readonly custom: Level | null = null,
+  ) {
     super();
     this.onClick = () => {
       this.context.audio.unlock();
@@ -75,7 +79,7 @@ export class TitleScene extends Scene {
   }
 
   override getNextScene(): Scene {
-    return new LoadingScene(this.context, 0);
+    return new LoadingScene(this.context, this.custom ?? 0);
   }
 
   /** Placement is rerun every frame, so a resize takes effect immediately. */

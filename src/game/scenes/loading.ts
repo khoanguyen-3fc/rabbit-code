@@ -13,6 +13,7 @@ import {
   type LevelManifest,
   pos,
   preload,
+  sheetsForLevel,
   spriteNames,
   unloadSheet,
   usedSheetIndices,
@@ -29,7 +30,12 @@ import {
   WaitAction,
 } from '../../render/scene-graph';
 import { rasterizeKey, SpriteNode } from '../../render/sprite';
-import { loadLevelForManifest, loadTutorialLevel, type GameContext } from '../context';
+import {
+  customManifest,
+  loadLevelForManifest,
+  loadTutorialLevel,
+  type GameContext,
+} from '../context';
 import { Scene } from '../scene';
 import { PlayScene } from './play';
 
@@ -116,13 +122,27 @@ export class LoadingScene extends Scene {
   private readonly sprites = new SceneNode();
   private readonly letters: SceneNode[] = [];
 
+  /** Null for a ladder level; the level itself when the editor supplied one. */
+  private readonly custom: Level | null;
+  /** Null for a custom level, which is not on the ladder. */
+  private readonly puzzleIndex: number | null;
+  private readonly manifest: LevelManifest;
+
   constructor(
     private readonly context: GameContext,
-    private readonly puzzleIndex: number,
+    /** A ladder level by index, or a level the editor made, which has no map file to fetch. */
+    target: number | Level,
     /** False when the interactive map jumped straight to this level. */
     private readonly showIntroOverlay = true,
   ) {
     super();
+
+    this.custom = typeof target === 'number' ? null : target;
+    this.puzzleIndex = typeof target === 'number' ? target : null;
+    this.manifest =
+      typeof target === 'number'
+        ? context.levels.levels[target]
+        : customManifest(target, context.levels);
 
     // The sprite node's position is its bottom-left corner, so the carrot hangs above the row.
     const carrot = new SpriteNode(CARROT_FRAMES);
@@ -142,10 +162,6 @@ export class LoadingScene extends Scene {
       this.letters.push(wrapper);
       x += LETTER_PITCH;
     }
-  }
-
-  private get manifest(): LevelManifest {
-    return this.context.levels.levels[this.puzzleIndex];
   }
 
   protected override onFocus(): void {
@@ -218,13 +234,15 @@ export class LoadingScene extends Scene {
     const manifest = this.manifest;
     // What the map actually draws from, not the manifest's preload list: that list omits sheet 10
     // for L4 and sheet 2 for L5, and a missing sheet makes its props silently invisible.
-    const used = await usedSheetIndices(manifest.mapFile);
+    const used = this.custom
+      ? sheetsForLevel(this.custom, this.context.tiles)
+      : await usedSheetIndices(manifest.mapFile);
     const sheets = [...new Set([SHARED_SHEET_INDEX, ...manifest.spriteSheetIds, ...used])].filter(
       (index) => !rasterizedSheets.has(index),
     );
     try {
       const [level, introLevel] = await Promise.all([
-        loadLevelForManifest(manifest, this.context.tiles),
+        this.custom ?? loadLevelForManifest(manifest, this.context.tiles),
         this.loadIntroLevel(manifest),
         preload(sheets),
         this.startAudio(),

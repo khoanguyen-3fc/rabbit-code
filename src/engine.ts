@@ -12,6 +12,7 @@ import {
   type EventBus,
   forwardCell,
   type GameEvent,
+  type GidType,
   gidTable,
   gridKey,
   type GridPos,
@@ -681,6 +682,14 @@ export interface TiledMap {
   layers: TiledLayer[];
 }
 
+/** The version string the shipped maps carry. */
+const TILED_VERSION = '1.0.2';
+/** The external tileset every map shares. */
+const TILESET_SOURCE = 'level1_tileset.json';
+/** Tile size in px; `y * TILE_HEIGHT` is a layer's `offsety`. */
+const TILE_WIDTH = 128;
+const TILE_HEIGHT = 64;
+
 /** Object gids are masked with this; tile-layer gids are not. */
 const GID_MASK = 0x0fffffff;
 /** Only the horizontal flip bit is honored. */
@@ -838,5 +847,164 @@ export function importTiled(map: TiledMap, tiles: TilesFile, meta: TiledImportMe
     ],
     targetBlockCount: meta.targetBlockCount ?? 0,
     spriteSheetIds: meta.spriteSheetIds ?? [],
+  };
+}
+
+// --- export ------------------------------------------------------------------------------------------
+
+/** One entry of a tile layer, before it is written into that layer's `data` array. */
+interface LayerCell {
+  y: number;
+  x: number;
+  z: number;
+  gid: number;
+}
+
+function playerGid(tiles: TilesFile, orientation: Orientation): number {
+  const def = tiles.tiles.find(
+    (tile) => tile.type === 'player' && tile.orientation === orientation,
+  );
+  if (!def) throw new Error(`no player gid for orientation ${orientation}`);
+  return def.gid;
+}
+
+/** Vectors go back out as JSON strings, which is the form `parseVec3` reads. */
+function propertiesOf(prop: LevelProp): Pick<TiledObject, 'properties' | 'propertytypes'> {
+  const properties: Record<string, TiledPropertyValue> = {};
+  const propertytypes: Record<string, string> = {};
+  const addVec = (name: string, value: GridPos | null): void => {
+    if (!value) return;
+    properties[name] = JSON.stringify(value);
+    propertytypes[name] = 'string';
+  };
+
+  addVec('objectAnchor', prop.objectAnchor);
+  const trigger = prop.trigger;
+  if (trigger) {
+    addVec('enterTrigger', trigger.enterTrigger);
+    addVec('exitTrigger', trigger.exitTrigger);
+    addVec('reverseTrigger', trigger.reverseTrigger);
+    if (trigger.firstVisible) {
+      properties.firstVisible = true;
+      propertytypes.firstVisible = 'bool';
+    }
+    if (trigger.retriggerable) {
+      properties.retriggerable = true;
+      propertytypes.retriggerable = 'bool';
+    }
+    if (trigger.loopAfterFrame !== null) {
+      properties.loopAfterFrame = trigger.loopAfterFrame;
+      propertytypes.loopAfterFrame = 'int';
+    }
+  }
+  return Object.keys(properties).length === 0 ? {} : { properties, propertytypes };
+}
+
+/**
+ * Writes a `Level` back out as a Tiled map: one tile layer per height with the ground first, one
+ * object layer per prop height in the order the props are stored, and the shared external tileset.
+ * `importTiled` reads the result back to an equal `Level`, apart from the five fields a map file
+ * has nowhere to put - id, title, allowedBlocks, targetBlockCount and spriteSheetIds - which the
+ * caller passes back in as `meta`.
+ *
+ * Layer names, `draworder` and object `name`/`type`/`rotation` are regenerated rather than
+ * preserved, since nothing reads them back.
+ */
+export function exportTiled(level: Level, tiles: TilesFile): TiledMap {
+  const byGid = gidTable(tiles);
+  // A gid whose type does not match the array it sits in would re-import into a different array,
+  // so it is rejected here rather than silently moving on the next load.
+  const checkGid = (gid: number, expected: GidType, where: string): void => {
+    const def = byGid.get(gid);
+    if (!def) throw new Error(`${where} uses gid ${gid}, which is not in the tileset`);
+    if (def.type !== expected) throw new Error(`${where} uses a ${def.type} gid, not ${expected}`);
+  };
+  for (const tile of level.tiles) checkGid(tile.gid, tile.type, `tile at ${gridKey(tile.pos)}`);
+  for (const carrot of level.carrots) {
+    checkGid(carrot.gid, 'carrot', `carrot at ${gridKey(carrot.pos)}`);
+  }
+
+  const cells: LayerCell[] = [
+    ...level.tiles.map((tile) => ({ ...tile.pos, gid: tile.gid })),
+    ...level.carrots.map((carrot) => ({ ...carrot.pos, gid: carrot.gid })),
+    { ...level.start.pos, gid: playerGid(tiles, level.start.orientation) },
+  ];
+
+  // Descending y puts the ground layer first, which is the order the shipped maps use.
+  const tileHeights = [...new Set(cells.map((cell) => cell.y))].sort((a, b) => b - a);
+  const layers: TiledLayer[] = tileHeights.map((y, index) => {
+    const data = new Array<number>(level.width * level.height).fill(0);
+    for (const cell of cells) {
+      if (cell.y !== y) continue;
+      const col = Math.round(cell.x);
+      const row = Math.round(cell.z);
+      // The layer is exactly `data[width * height]`. A cell outside that rectangle has no slot, and
+      // writing one anyway drops it or leaves holes that serialize as `null`, which is not a gid.
+      if (col < 0 || col >= level.width || row < 0 || row >= level.height) {
+        const size = `${level.width}x${level.height}`;
+        throw new Error(`cell ${gridKey(cell)} is outside the ${size} map`);
+      }
+      data[row * level.width + col] = cell.gid;
+    }
+    return {
+      type: 'tilelayer',
+      name: `Tile Layer ${index + 1}`,
+      width: level.width,
+      height: level.height,
+      opacity: 1,
+      visible: true,
+      x: 0,
+      y: 0,
+      ...(y === 0 ? {} : { offsetx: 0, offsety: y * TILE_HEIGHT }),
+      data,
+    };
+  });
+
+  const propHeights: number[] = [];
+  for (const prop of level.props) {
+    if (!propHeights.includes(prop.position.y)) propHeights.push(prop.position.y);
+  }
+  for (const [index, y] of propHeights.entries()) {
+    layers.push({
+      type: 'objectgroup',
+      name: `Object Layer ${index + 1}`,
+      draworder: 'topdown',
+      opacity: 1,
+      visible: true,
+      x: 0,
+      y: 0,
+      ...(y === 0 ? {} : { offsetx: 0, offsety: y * TILE_HEIGHT }),
+      objects: level.props
+        .filter((prop) => prop.position.y === y)
+        .map((prop) => ({
+          id: prop.id,
+          gid: prop.mirrored ? prop.gid + FLIP_HORIZONTAL : prop.gid,
+          x: prop.position.x * TILE_HEIGHT + prop.size.width / 4,
+          y: prop.position.z * TILE_HEIGHT - prop.size.width / 4,
+          width: prop.size.width,
+          height: prop.size.height,
+          name: '',
+          type: '',
+          rotation: 0,
+          visible: true,
+          ...propertiesOf(prop),
+        })),
+    });
+  }
+
+  const maxId = level.props.reduce((max, prop) => Math.max(max, prop.id), 0);
+  return {
+    type: 'map',
+    version: 1,
+    tiledversion: TILED_VERSION,
+    orientation: 'isometric',
+    renderorder: 'right-down',
+    width: level.width,
+    height: level.height,
+    tilewidth: TILE_WIDTH,
+    tileheight: TILE_HEIGHT,
+    nextobjectid: maxId + 1,
+    tilesets: [{ firstgid: tiles.gidMapping.firstgid, source: TILESET_SOURCE }],
+    layers,
   };
 }

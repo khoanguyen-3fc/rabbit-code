@@ -3,8 +3,10 @@
  */
 
 import './styles/game.css';
+import type { Level } from './core/assets';
 import { bootContext, type GameContext } from './game/context';
 import { TitleScene } from './game/scenes/title';
+import { readLevel } from './editor/storage';
 
 /** dt clamp: a stall is stretched, never fast-forwarded. */
 const DT_CLAMP_MS = 100;
@@ -68,9 +70,18 @@ interface GameSession {
   stop(): void;
 }
 
+/**
+ * `?custom=<id>` plays a level from the editor instead of the ladder. An id that is not in this
+ * browser falls back to the ladder rather than leaving a blank page.
+ */
+function customLevel(): Level | null {
+  const id = new URLSearchParams(window.location.search).get('custom');
+  return id === null ? null : readLevel(id);
+}
+
 async function startGame(root: HTMLElement): Promise<GameSession> {
   const context = await bootContext(root);
-  context.scenes.enqueue(new TitleScene(context));
+  context.scenes.enqueue(new TitleScene(context, customLevel()));
 
   const loop = new GameLoop({
     update: (dtMs) => context.scenes.update(dtMs),

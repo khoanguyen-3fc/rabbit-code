@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rabbit Code Editor</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <style>
+      html,
+      body,
+      #app {
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+
+    <!-- The level list. One row per stored level, cloned from tpl-ed-row. -->
+    <template id="tpl-ed-list">
+      <div class="rc-ed-list">
+        <h1>Levels</h1>
+        <p class="rc-ed-empty">No levels yet. Make one.</p>
+        <ul class="rc-ed-rows"></ul>
+        <button type="button" class="rc-ed-new">New level</button>
+        <p class="rc-ed-note">
+          Levels are kept in this browser. Play opens the game on the level; Export writes a Tiled
+          map the game can read.
+        </p>
+      </div>
+    </template>
+
+    <template id="tpl-ed-row">
+      <li class="rc-ed-row">
+        <span class="rc-ed-name"></span>
+        <span class="rc-ed-size"></span>
+        <button type="button" class="rc-ed-play">Play</button>
+        <button type="button" class="rc-ed-edit">Edit</button>
+        <button type="button" class="rc-ed-export">Export</button>
+        <button type="button" class="rc-ed-delete">Delete</button>
+      </li>
+    </template>
+
+    <!-- The editing surface: the canvas, the tool palette and a live status line. -->
+    <template id="tpl-ed-edit">
+      <div class="rc-ed-edit-view">
+        <div class="rc-ed-bar">
+          <button type="button" class="rc-ed-back">Back to levels</button>
+          <label class="rc-ed-title-label">
+            Title
+            <input type="text" class="rc-ed-title" />
+          </label>
+          <div class="rc-ed-tools" role="radiogroup" aria-label="Tool"></div>
+        </div>
+        <canvas class="rc-ed-canvas"></canvas>
+        <p class="rc-ed-status" role="status"></p>
+      </div>
+    </template>
+
+    <template id="tpl-ed-tool">
+      <button type="button" class="rc-ed-tool" role="radio" aria-checked="false"></button>
+    </template>
+
+    <script type="module" src="/src/editor/main.ts"></script>
+  </body>
+</html>
