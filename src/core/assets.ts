@@ -667,6 +667,19 @@ export async function usedSheetIndices(mapFile: string): Promise<number[]> {
   return usage ? usage.usedSheetIndices : [];
 }
 
+/**
+ * Every sheet a level already in hand draws from, for a level the editor made: there is no map
+ * file to look up in the table above. The gids are resolved through the tileset and the atlas, so
+ * this stays right as the editor's palette grows. The rabbit is not a gid; its frames are on the
+ * shared sheet, which every caller loads anyway.
+ */
+export function sheetsForLevel(level: Level, tiles: TilesFile): number[] {
+  const gids = [...level.tiles, ...level.carrots, ...level.props].map((each) => each.gid);
+  const frames = gids.flatMap((gid) => tiles.tiles.find((tile) => tile.gid === gid)?.frames ?? []);
+  const indices = frames.map((frame) => getSprite(frame)?.sheetIndex);
+  return [...new Set(indices.filter((index) => index !== undefined))];
+}
+
 function sheetIndexOf(file: SheetsFile, filename: string): number {
   const entry = file.sheets.find((s) => s.filename === filename);
   if (!entry) throw new Error(`unknown sprite sheet "${filename}"`);

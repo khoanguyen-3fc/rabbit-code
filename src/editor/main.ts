@@ -45,6 +45,13 @@ function showList(root: HTMLElement, tiles: TilesFile): void {
     el(row, '.rc-ed-name').textContent = level.title;
     el(row, '.rc-ed-size').textContent = `${level.width} by ${level.height}`;
 
+    const play = el<HTMLButtonElement>(row, '.rc-ed-play');
+    play.setAttribute('aria-label', `Play ${level.title}`);
+    // Relative, so it still resolves when the game is deployed under a sub-path.
+    play.addEventListener('click', () => {
+      window.location.href = `index.html?custom=${encodeURIComponent(level.id)}`;
+    });
+
     const edit = el<HTMLButtonElement>(row, '.rc-ed-edit');
     edit.setAttribute('aria-label', `Edit ${level.title}`);
     edit.addEventListener('click', () => showEditor(root, tiles, level));

@@ -270,6 +270,51 @@ export async function loadLevelForManifest(
   });
 }
 
+/** The one block with a value input; its shadow is what the toolbox entry has to carry. */
+const LOOP_BLOCK = 'logo17_for_loop';
+
+/** The loop count a fresh loop block comes out of the toolbox with. */
+const LOOP_DEFAULT_TIMES = 4;
+
+function toolboxXml(blocks: readonly BlockType[]): string {
+  const entries = blocks.map((type) =>
+    type === LOOP_BLOCK
+      ? `<block type="${type}"><value name="TIMES"><shadow type="math_whole_number">` +
+        `<field name="NUM">${LOOP_DEFAULT_TIMES}</field></shadow></value></block>`
+      : `<block type="${type}"></block>`,
+  );
+  return `<xml id="toolbox-simple" style="display: none">${entries.join('')}</xml>`;
+}
+
+/**
+ * A manifest for a level the editor made. It has no map file, no puzzle index and no intro, and
+ * its toolbox follows from the level's own `allowedBlocks`.
+ *
+ * The workspace placement and the footer height are taken from a shipped level with the same
+ * toolbox shape rather than written out again: the footer is taller only when the loop block is
+ * offered, and every shipped level seeds the workspace identically.
+ */
+export function customManifest(level: Level, levels: LevelsFile): LevelManifest {
+  const hasLoop = level.allowedBlocks.includes(LOOP_BLOCK);
+  const like =
+    levels.levels.find(
+      (each) => each.toolboxBlocks.some((block) => block.type === LOOP_BLOCK) === hasLoop,
+    ) ?? levels.levels[0];
+  return {
+    puzzleIndex: null,
+    id: level.id,
+    mapFile: '',
+    targetBlockCount: level.targetBlockCount,
+    spriteSheetIds: [],
+    spriteSheets: [],
+    toolboxXml: toolboxXml(level.allowedBlocks),
+    toolboxBlocks: [],
+    workspace: like.workspace,
+    introOverlay: null,
+    blocklyFooterHeightPx: like.blocklyFooterHeightPx,
+  };
+}
+
 export async function loadTutorialLevel(
   tutorial: TutorialManifest,
   tiles: TilesFile,
